@@ -26,7 +26,7 @@ func returnJson[T any](w http.ResponseWriter, withData func() (T, error)) {
 	setJsonHeader(w)
 	data, serverErr := withData()
 	if serverErr != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		serverErrJson, err := json.Marshal(&serverErr)
 		if err != nil {
 			log.Print(err)
@@ -39,7 +39,7 @@ func returnJson[T any](w http.ResponseWriter, withData func() (T, error)) {
 	dataJson, err := json.Marshal(&data)
 	if err != nil {
 		log.Print(err)
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -49,9 +49,9 @@ func returnJson[T any](w http.ResponseWriter, withData func() (T, error)) {
 func returnErr(w http.ResponseWriter, err error, code int) {
 	returnJson(w, func() (interface{}, error) {
 		errorMessage := struct {
-			Err string
+			Error string
 		}{
-			Err: err.Error(),
+			Error: err.Error(),
 		}
 		w.WriteHeader(code)
 		return errorMessage, nil
@@ -61,13 +61,14 @@ func returnErr(w http.ResponseWriter, err error, code int) {
 func CreateEmail(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
+			returnErr(w, errors.New("http method now allowed"), http.StatusMethodNotAllowed)
 			return
 		}
 		entry := mdb.EmailEntry{}
 		fromJson(r.Body, &entry)
 
 		if err := mdb.CreateEmail(db, entry.Email); err != nil {
-			returnErr(w, err, 400)
+			returnErr(w, err, http.StatusBadRequest)
 			return
 		}
 
@@ -81,6 +82,7 @@ func CreateEmail(db *sql.DB) http.Handler {
 func GetEmail(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
+			returnErr(w, errors.New("http method now allowed"), http.StatusMethodNotAllowed)
 			return
 		}
 		entry := mdb.EmailEntry{}
@@ -96,13 +98,14 @@ func GetEmail(db *sql.DB) http.Handler {
 func UpdateEmail(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPut {
+			returnErr(w, errors.New("http method now allowed"), http.StatusMethodNotAllowed)
 			return
 		}
 		entry := mdb.EmailEntry{}
 		fromJson(r.Body, &entry)
 
 		if err := mdb.UpdateEmail(db, entry); err != nil {
-			returnErr(w, err, 400)
+			returnErr(w, err, http.StatusBadRequest)
 			return
 		}
 
@@ -116,6 +119,7 @@ func UpdateEmail(db *sql.DB) http.Handler {
 func GetEmailBatch(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
+			returnErr(w, errors.New("http method now allowed"), http.StatusMethodNotAllowed)
 			return
 		}
 		queryOptions := mdb.GetEmailBatchQueryParams{}
@@ -136,13 +140,14 @@ func GetEmailBatch(db *sql.DB) http.Handler {
 func DeleteEmail(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
+			returnErr(w, errors.New("http method now allowed"), http.StatusMethodNotAllowed)
 			return
 		}
 		entry := mdb.EmailEntry{}
 		fromJson(r.Body, &entry)
 
 		if err := mdb.DeleteEmail(db, entry.Email); err != nil {
-			returnErr(w, err, 400)
+			returnErr(w, err, http.StatusBadRequest)
 			return
 		}
 
