@@ -67,14 +67,14 @@ func (ms *MailServer) GetEmailBatch(ctx context.Context, req *proto.GetEmailBatc
 		return &proto.GetEmailBatchResponse{}, err
 	}
 
-	pbEntires := make([]*proto.EmailEntry, 0, len(mdbEntries))
+	pbEntries := make([]*proto.EmailEntry, 0, len(mdbEntries))
 
 	for i := 0; i < len(mdbEntries); i++ {
 		entry := mdbEntryToPbEntry(&mdbEntries[i])
-		pbEntires = append(pbEntires, &entry)
+		pbEntries = append(pbEntries, &entry)
 	}
 
-	return &proto.GetEmailBatchResponse{EmailEntries: pbEntires}, nil
+	return &proto.GetEmailBatchResponse{EmailEntries: pbEntries}, nil
 }
 
 func (ms *MailServer) CreateEmail(ctx context.Context, req *proto.CreateEmailRequest) (*proto.EmailResponse, error) {
